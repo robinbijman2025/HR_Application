@@ -293,7 +293,10 @@
     .toolbar{flex-direction:column;align-items:stretch;}
   }
 </style>
-<script src="https://alcdn.msauth.net/browser/3.7.0/js/msal-browser.min.js"></script>
+<script
+  src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"
+  integrity="sha384-PARf28kmic36Ve+O3DnUerRXFtOQ7ZDqRDGpLcbljly5/N39T2OV3kt3QsWOKeAX"
+  crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -445,8 +448,8 @@
    ===================================================================== */
   const msalConfig = {
     auth: {
-      clientId: '522b8929-f96a-452e-a8de-0271d803eee1',
-      authority: 'https://login.microsoftonline.com/aada8fcb-ea3f-43ad-9ca9-62fdaf03d5e8',
+      clientId: 'VUL-HIER-JE-APPLICATION-CLIENT-ID-IN',
+      authority: 'https://login.microsoftonline.com/VUL-HIER-JE-TENANT-ID-IN',
       redirectUri: window.location.origin + window.location.pathname
     },
     cache: {
@@ -498,7 +501,6 @@
     }
     try{
       msalInstance = new msal.PublicClientApplication(msalConfig);
-      await msalInstance.initialize();
       const response = await msalInstance.handleRedirectPromise();
       const account = response ? response.account : msalInstance.getAllAccounts()[0];
       if(account){
@@ -518,7 +520,6 @@
         return;
       }
       msalInstance = new msal.PublicClientApplication(msalConfig);
-      await msalInstance.initialize();
     }
     try{
       const result = await msalInstance.loginPopup(loginRequest);

@@ -66,7 +66,6 @@
     }
     try{
       msalInstance = new msal.PublicClientApplication(msalConfig);
-      await msalInstance.initialize();
       const response = await msalInstance.handleRedirectPromise();
       const account = response ? response.account : msalInstance.getAllAccounts()[0];
       if(account){
@@ -86,7 +85,6 @@
         return;
       }
       msalInstance = new msal.PublicClientApplication(msalConfig);
-      await msalInstance.initialize();
     }
     try{
       const result = await msalInstance.loginPopup(loginRequest);
