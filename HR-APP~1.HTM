@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Applicatie - Werknemersbeheer</title>
+<style>
+  :root{
+    --primary:#4f46e5;
+    --primary-dark:#4338ca;
+    --bg:#f5f6fa;
+    --card:#ffffff;
+    --border:#e2e4ec;
+    --text:#1f2333;
+    --muted:#6b7280;
+    --danger:#dc2626;
+    --danger-bg:#fee2e2;
+    --success:#16a34a;
+    --success-bg:#dcfce7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    background:linear-gradient(135deg,var(--primary),#7c3aed);
+    color:#fff;
+    padding:28px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  header h1{margin:0;font-size:24px;}
+  header p{margin:4px 0 0;opacity:.9;font-size:14px;}
+
+  .user-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:rgba(255,255,255,.12);
+    padding:8px 14px;
+    border-radius:999px;
+  }
+  .user-info .user-avatar{
+    width:34px;height:34px;border-radius:50%;
+    background:#fff;color:var(--primary);
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;
+  }
+  .user-info .user-meta{line-height:1.25;}
+  .user-info .user-name{font-size:13px;font-weight:600;}
+  .user-info .user-email{font-size:11px;opacity:.85;}
+  .user-info .logout-btn{
+    background:rgba(255,255,255,.18);
+    color:#fff;
+    padding:6px 12px;
+    font-size:12px;
+  }
+  .user-info .logout-btn:hover{background:rgba(255,255,255,.3);}
+
+  /* Login screen */
+  .login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,var(--primary),#7c3aed);
+    padding:20px;
+  }
+  .login-card{
+    background:#fff;
+    border-radius:16px;
+    padding:40px 36px;
+    max-width:380px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);
+  }
+  .login-card .login-logo{
+    width:56px;height:56px;
+    border-radius:14px;
+    background:var(--primary);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;font-weight:700;
+    margin:0 auto 18px;
+  }
+  .login-card h2{margin:0 0 6px;font-size:20px;}
+  .login-card p{margin:0 0 26px;color:var(--muted);font-size:14px;}
+  .ms-login-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    width:100%;
+    background:#fff;
+    color:#5e5e5e;
+    border:1px solid #8c8c8c;
+    padding:11px 16px;
+    font-size:14px;
+    border-radius:6px;
+  }
+  .ms-login-btn:hover{background:#f5f5f5;}
+  .ms-login-btn svg{flex-shrink:0;}
+  .login-error{
+    display:none;
+    margin-top:16px;
+    padding:10px 12px;
+    background:var(--danger-bg);
+    color:var(--danger);
+    border-radius:8px;
+    font-size:13px;
+    text-align:left;
+  }
+  .login-hint{
+    margin-top:18px;
+    font-size:12px;
+    color:var(--muted);
+    text-align:left;
+    background:#f8f9fc;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .login-hint code{background:#eef0f6;padding:1px 4px;border-radius:4px;}
+
+  .container{max-width:1100px;margin:0 auto;padding:24px;}
+
+  .toolbar{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .search-filters{display:flex;gap:10px;flex-wrap:wrap;flex:1;}
+  input[type="text"], select{
+    padding:9px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:14px;
+    background:#fff;
+    color:var(--text);
+  }
+  #searchInput{min-width:220px;flex:1;}
+
+  button{
+    cursor:pointer;
+    border:none;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    padding:9px 16px;
+    transition:background .15s ease, transform .05s ease;
+  }
+  button:active{transform:scale(.97);}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:#fff;color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{background:#f0f1f5;}
+  .btn-danger{background:var(--danger-bg);color:var(--danger);}
+  .btn-danger:hover{background:#fecaca;}
+  .btn-small{padding:6px 10px;font-size:13px;}
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .stat-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .stat-card .num{font-size:26px;font-weight:700;}
+  .stat-card .label{font-size:13px;color:var(--muted);margin-top:2px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+    background:#fafafd;
+  }
+  tbody td{
+    padding:12px 16px;
+    border-bottom:1px solid var(--border);
+    font-size:14px;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#fafbff;}
+
+  .avatar{
+    width:32px;height:32px;border-radius:50%;
+    background:var(--primary);color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;margin-right:10px;vertical-align:middle;
+  }
+  .name-cell{display:flex;align-items:center;}
+
+  .badge{
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .badge-active{background:var(--success-bg);color:var(--success);}
+  .badge-inactive{background:var(--danger-bg);color:var(--danger);}
+
+  .actions-cell{display:flex;gap:8px;}
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--muted);
+  }
+
+  /* Modal */
+  .overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(15,17,25,.45);
+    align-items:center;justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:#fff;
+    border-radius:14px;
+    width:100%;
+    max-width:480px;
+    padding:26px;
+    max-height:90vh;
+    overflow-y:auto;
+  }
+  .modal h2{margin:0 0 18px;font-size:18px;}
+  .form-row{margin-bottom:14px;}
+  .form-row label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:6px;
+    color:#374151;
+  }
+  .form-row input, .form-row select{width:100%;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:20px;
+  }
+  .error-text{color:var(--danger);font-size:12px;margin-top:4px;display:none;}
+
+  .toast{
+    position:fixed;
+    bottom:24px;
+    right:24px;
+    background:#1f2333;
+    color:#fff;
+    padding:12px 18px;
+    border-radius:8px;
+    font-size:14px;
+    opacity:0;
+    transform:translateY(10px);
+    transition:all .25s ease;
+    z-index:100;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  @media (max-width:640px){
+    .form-grid{grid-template-columns:1fr;}
+    .toolbar{flex-direction:column;align-items:stretch;}
+  }
+</style>
+<script src="https://alcdn.msauth.net/browser/3.7.0/js/msal-browser.min.js"></script>
+</head>
+<body>
+
+<!-- Login screen (shown until Microsoft SSO login succeeds) -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">HR</div>
+    <h2>HR Applicatie</h2>
+    <p>Log in met je Microsoft-account om verder te gaan.</p>
+    <button class="ms-login-btn" id="msLoginBtn">
+      <svg width="18" height="18" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+      Inloggen met Microsoft
+    </button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-hint">
+      Deze knop gebruikt Microsoft Entra ID (MSAL.js). Vul je eigen <code>clientId</code> en <code>tenantId</code> in bovenaan het script om te koppelen aan jouw Azure-tenant.
+    </div>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none;">
+
+<header>
+  <h1>HR Applicatie</h1>
+  <p>Werknemersbeheer &mdash; overzicht, toevoegen, bewerken en verwijderen</p>
+  <div class="user-info" id="userInfo" style="display:none;">
+    <div class="user-avatar" id="userAvatar">?</div>
+    <div class="user-meta">
+      <div class="user-name" id="userName">&nbsp;</div>
+      <div class="user-email" id="userEmail">&nbsp;</div>
+    </div>
+    <button class="logout-btn" id="logoutBtn">Uitloggen</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <div class="search-filters">
+      <input type="text" id="searchInput" placeholder="Zoek op naam of e-mail...">
+      <select id="deptFilter"><option value="">Alle afdelingen</option></select>
+      <select id="statusFilter">
+        <option value="">Alle statussen</option>
+        <option value="Actief">Actief</option>
+        <option value="Inactief">Inactief</option>
+      </select>
+    </div>
+    <button class="btn-primary" id="addBtn">+ Werknemer toevoegen</button>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Naam</th>
+          <th>Functie</th>
+          <th>Afdeling</th>
+          <th>E-mail</th>
+          <th>In dienst</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      Geen werknemers gevonden.
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /appRoot -->
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">Werknemer toevoegen</h2>
+    <form id="employeeForm">
+      <input type="hidden" id="empId">
+      <div class="form-row">
+        <label>Volledige naam *</label>
+        <input type="text" id="empName" required>
+        <div class="error-text" id="err-empName">Naam is verplicht.</div>
+      </div>
+      <div class="form-row">
+        <label>E-mailadres *</label>
+        <input type="text" id="empEmail" required>
+        <div class="error-text" id="err-empEmail">Voer een geldig e-mailadres in.</div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>Functie *</label>
+          <input type="text" id="empRole" required>
+          <div class="error-text" id="err-empRole">Functie is verplicht.</div>
+        </div>
+        <div class="form-row">
+          <label>Afdeling *</label>
+          <select id="empDept" required>
+            <option value="">Kies afdeling</option>
+            <option>Sales</option>
+            <option>Marketing</option>
+            <option>Engineering</option>
+            <option>HR</option>
+            <option>Finance</option>
+            <option>Operations</option>
+            <option>Support</option>
+          </select>
+          <div class="error-text" id="err-empDept">Kies een afdeling.</div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-row">
+          <label>In dienst sinds</label>
+          <input type="date" id="empDate">
+        </div>
+        <div class="form-row">
+          <label>Status</label>
+          <select id="empStatus">
+            <option value="Actief">Actief</option>
+            <option value="Inactief">Inactief</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelBtn">Annuleren</button>
+        <button type="submit" class="btn-primary" id="saveBtn">Opslaan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   MICROSOFT SSO (Entra ID / Azure AD) — MSAL.js configuratie
+   =====================================================================
+   Om dit aan jouw organisatie te koppelen:
+   1. Ga naar Azure Portal > Microsoft Entra ID > App registrations > New registration.
+   2. Kies "Single-page application (SPA)" als platform en zet de Redirect URI
+      op de URL waar dit bestand wordt gehost (bv. https://intranet.bedrijf.nl/hr-applicatie.html).
+      Lokaal testen vanaf file:// werkt NIET met redirect-flows — host het bestand
+      via een lokale server (bv. `npx serve`) of op een echte URL.
+   3. Kopieer de "Application (client) ID" en "Directory (tenant) ID" hieronder.
+   4. Geen client secret nodig — SPA's gebruiken PKCE, volledig veilig client-side.
+   ===================================================================== */
+  const msalConfig = {
+    auth: {
+      clientId: 'VUL-HIER-JE-APPLICATION-CLIENT-ID-IN',
+      authority: 'https://login.microsoftonline.com/VUL-HIER-JE-TENANT-ID-IN',
+      redirectUri: window.location.origin + window.location.pathname
+    },
+    cache: {
+      cacheLocation: 'sessionStorage',
+      storeAuthStateInCookie: false
+    }
+  };
+
+  const loginRequest = { scopes: ['User.Read'] };
+
+  let msalInstance = null;
+  let activeAccount = null;
+
+  const loginScreen = document.getElementById('loginScreen');
+  const appRoot = document.getElementById('appRoot');
+  const msLoginBtn = document.getElementById('msLoginBtn');
+  const loginError = document.getElementById('loginError');
+  const userInfo = document.getElementById('userInfo');
+  const userAvatar = document.getElementById('userAvatar');
+  const userNameEl = document.getElementById('userName');
+  const userEmailEl = document.getElementById('userEmail');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  function showLoginError(msg){
+    loginError.textContent = msg;
+    loginError.style.display = 'block';
+  }
+
+  function initialsFromName(name){
+    return name.split(' ').filter(Boolean).slice(0,2).map(n=>n[0].toUpperCase()).join('');
+  }
+
+  function showApp(account){
+    activeAccount = account;
+    const name = account.name || account.username;
+    userNameEl.textContent = name;
+    userEmailEl.textContent = account.username || '';
+    userAvatar.textContent = initialsFromName(name) || '?';
+    userInfo.style.display = 'flex';
+    loginScreen.style.display = 'none';
+    appRoot.style.display = 'block';
+    startEmployeeApp();
+  }
+
+  async function initMsal(){
+    if(msalConfig.auth.clientId === 'VUL-HIER-JE-APPLICATION-CLIENT-ID-IN'){
+      showLoginError('SSO is nog niet geconfigureerd: vul clientId en tenantId in bovenaan het script (msalConfig).');
+      return;
+    }
+    try{
+      msalInstance = new msal.PublicClientApplication(msalConfig);
+      await msalInstance.initialize();
+      const response = await msalInstance.handleRedirectPromise();
+      const account = response ? response.account : msalInstance.getAllAccounts()[0];
+      if(account){
+        msalInstance.setActiveAccount(account);
+        showApp(account);
+      }
+    }catch(err){
+      showLoginError('Inloggen mislukt: ' + (err && err.message ? err.message : err));
+    }
+  }
+
+  msLoginBtn.addEventListener('click', async ()=>{
+    loginError.style.display = 'none';
+    if(!msalInstance){
+      if(msalConfig.auth.clientId === 'VUL-HIER-JE-APPLICATION-CLIENT-ID-IN'){
+        showLoginError('SSO is nog niet geconfigureerd: vul clientId en tenantId in bovenaan het script (msalConfig).');
+        return;
+      }
+      msalInstance = new msal.PublicClientApplication(msalConfig);
+      await msalInstance.initialize();
+    }
+    try{
+      const result = await msalInstance.loginPopup(loginRequest);
+      msalInstance.setActiveAccount(result.account);
+      showApp(result.account);
+    }catch(err){
+      showLoginError('Inloggen mislukt: ' + (err && err.message ? err.message : err));
+    }
+  });
+
+  logoutBtn.addEventListener('click', ()=>{
+    if(msalInstance && activeAccount){
+      msalInstance.logoutPopup({ account: activeAccount }).catch(()=>{});
+    }
+    appRoot.style.display = 'none';
+    userInfo.style.display = 'none';
+    loginScreen.style.display = 'flex';
+  });
+
+  initMsal();
+
+  let appStarted = false;
+  function startEmployeeApp(){
+  if(appStarted) return; // voorkom dubbele event listeners bij opnieuw inloggen
+  appStarted = true;
+  const STORAGE_KEY = 'hrapp_employees_v1';
+
+  const seed = [
+    {id: cryptoId(), name:'Lotte de Vries', email:'lotte.devries@bedrijf.nl', role:'HR Manager', dept:'HR', date:'2021-03-01', status:'Actief'},
+    {id: cryptoId(), name:'Sem Bakker', email:'sem.bakker@bedrijf.nl', role:'Software Engineer', dept:'Engineering', date:'2022-06-15', status:'Actief'},
+    {id: cryptoId(), name:'Anouk Jansen', email:'anouk.jansen@bedrijf.nl', role:'Marketing Specialist', dept:'Marketing', date:'2020-11-20', status:'Actief'},
+    {id: cryptoId(), name:'Daan Visser', email:'daan.visser@bedrijf.nl', role:'Sales Manager', dept:'Sales', date:'2019-01-10', status:'Inactief'},
+    {id: cryptoId(), name:'Fleur Smit', email:'fleur.smit@bedrijf.nl', role:'Financieel Analist', dept:'Finance', date:'2023-02-05', status:'Actief'}
+  ];
+
+  function cryptoId(){
+    return 'e_' + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+  }
+
+  function loadEmployees(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    saveEmployees(seed);
+    return seed;
+  }
+
+  function saveEmployees(list){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }catch(e){}
+  }
+
+  let employees = loadEmployees();
+  let editingId = null;
+
+  const tableBody = document.getElementById('tableBody');
+  const emptyState = document.getElementById('emptyState');
+  const statsEl = document.getElementById('stats');
+  const searchInput = document.getElementById('searchInput');
+  const deptFilter = document.getElementById('deptFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  const overlay = document.getElementById('overlay');
+  const form = document.getElementById('employeeForm');
+  const modalTitle = document.getElementById('modalTitle');
+  const toast = document.getElementById('toast');
+
+  function initials(name){
+    return name.split(' ').filter(Boolean).slice(0,2).map(n=>n[0].toUpperCase()).join('');
+  }
+
+  function formatDate(d){
+    if(!d) return '&mdash;';
+    const parts = d.split('-');
+    if(parts.length!==3) return d;
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 2200);
+  }
+
+  function updateDeptFilterOptions(){
+    const depts = [...new Set(employees.map(e=>e.dept))].sort();
+    const current = deptFilter.value;
+    deptFilter.innerHTML = '<option value="">Alle afdelingen</option>' +
+      depts.map(d=>`<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+    if(depts.includes(current)) deptFilter.value = current;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function renderStats(){
+    const total = employees.length;
+    const active = employees.filter(e=>e.status==='Actief').length;
+    const inactive = total - active;
+    const depts = new Set(employees.map(e=>e.dept)).size;
+    statsEl.innerHTML = `
+      <div class="stat-card"><div class="num">${total}</div><div class="label">Totaal werknemers</div></div>
+      <div class="stat-card"><div class="num">${active}</div><div class="label">Actief</div></div>
+      <div class="stat-card"><div class="num">${inactive}</div><div class="label">Inactief</div></div>
+      <div class="stat-card"><div class="num">${depts}</div><div class="label">Afdelingen</div></div>
+    `;
+  }
+
+  function getFiltered(){
+    const q = searchInput.value.trim().toLowerCase();
+    const dept = deptFilter.value;
+    const status = statusFilter.value;
+    return employees.filter(e=>{
+      const matchesQ = !q || e.name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q);
+      const matchesDept = !dept || e.dept === dept;
+      const matchesStatus = !status || e.status === status;
+      return matchesQ && matchesDept && matchesStatus;
+    });
+  }
+
+  function render(){
+    renderStats();
+    updateDeptFilterOptions();
+    const list = getFiltered();
+    if(list.length === 0){
+      tableBody.innerHTML = '';
+      emptyState.style.display = 'block';
+      return;
+    }
+    emptyState.style.display = 'none';
+    tableBody.innerHTML = list.map(e=>`
+      <tr>
+        <td>
+          <div class="name-cell">
+            <span class="avatar">${escapeHtml(initials(e.name))}</span>
+            <span>${escapeHtml(e.name)}</span>
+          </div>
+        </td>
+        <td>${escapeHtml(e.role)}</td>
+        <td>${escapeHtml(e.dept)}</td>
+        <td>${escapeHtml(e.email)}</td>
+        <td>${formatDate(e.date)}</td>
+        <td><span class="badge ${e.status==='Actief'?'badge-active':'badge-inactive'}">${escapeHtml(e.status)}</span></td>
+        <td>
+          <div class="actions-cell">
+            <button class="btn-secondary btn-small" data-edit="${e.id}">Bewerken</button>
+            <button class="btn-danger btn-small" data-delete="${e.id}">Verwijderen</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openModal(emp){
+    editingId = emp ? emp.id : null;
+    modalTitle.textContent = emp ? 'Werknemer bewerken' : 'Werknemer toevoegen';
+    document.getElementById('empId').value = emp ? emp.id : '';
+    document.getElementById('empName').value = emp ? emp.name : '';
+    document.getElementById('empEmail').value = emp ? emp.email : '';
+    document.getElementById('empRole').value = emp ? emp.role : '';
+    document.getElementById('empDept').value = emp ? emp.dept : '';
+    document.getElementById('empDate').value = emp ? emp.date : '';
+    document.getElementById('empStatus').value = emp ? emp.status : 'Actief';
+    clearErrors();
+    overlay.classList.add('open');
+    document.getElementById('empName').focus();
+  }
+
+  function closeModal(){
+    overlay.classList.remove('open');
+    form.reset();
+    editingId = null;
+  }
+
+  function clearErrors(){
+    document.querySelectorAll('.error-text').forEach(el=>el.style.display='none');
+    document.querySelectorAll('input,select').forEach(el=>el.style.borderColor = 'var(--border)');
+  }
+
+  function showError(id){
+    document.getElementById('err-'+id).style.display = 'block';
+    document.getElementById(id).style.borderColor = 'var(--danger)';
+  }
+
+  function validate(){
+    clearErrors();
+    let valid = true;
+    const name = document.getElementById('empName').value.trim();
+    const email = document.getElementById('empEmail').value.trim();
+    const role = document.getElementById('empRole').value.trim();
+    const dept = document.getElementById('empDept').value;
+
+    if(!name){ showError('empName'); valid = false; }
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError('empEmail'); valid = false; }
+    if(!role){ showError('empRole'); valid = false; }
+    if(!dept){ showError('empDept'); valid = false; }
+    return valid;
+  }
+
+  // Event listeners
+  document.getElementById('addBtn').addEventListener('click', ()=>openModal(null));
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e)=>{ if(e.target === overlay) closeModal(); });
+
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if(!validate()) return;
+
+    const data = {
+      name: document.getElementById('empName').value.trim(),
+      email: document.getElementById('empEmail').value.trim(),
+      role: document.getElementById('empRole').value.trim(),
+      dept: document.getElementById('empDept').value,
+      date: document.getElementById('empDate').value,
+      status: document.getElementById('empStatus').value
+    };
+
+    if(editingId){
+      const idx = employees.findIndex(e=>e.id === editingId);
+      if(idx > -1) employees[idx] = {...employees[idx], ...data};
+      showToast('Werknemer bijgewerkt.');
+    } else {
+      employees.push({id: cryptoId(), ...data});
+      showToast('Werknemer toegevoegd.');
+    }
+    saveEmployees(employees);
+    closeModal();
+    render();
+  });
+
+  tableBody.addEventListener('click', (e)=>{
+    const editId = e.target.getAttribute('data-edit');
+    const delId = e.target.getAttribute('data-delete');
+    if(editId){
+      const emp = employees.find(x=>x.id === editId);
+      if(emp) openModal(emp);
+    }
+    if(delId){
+      const emp = employees.find(x=>x.id === delId);
+      if(emp && confirm(`Weet je zeker dat je ${emp.name} wilt verwijderen?`)){
+        employees = employees.filter(x=>x.id !== delId);
+        saveEmployees(employees);
+        showToast('Werknemer verwijderd.');
+        render();
+      }
+    }
+  });
+
+  searchInput.addEventListener('input', render);
+  deptFilter.addEventListener('change', render);
+  statusFilter.addEventListener('change', render);
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+
+  render();
+  } // einde startEmployeeApp
+</script>
+
+</body>
+</html>
